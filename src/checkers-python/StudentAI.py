@@ -26,8 +26,8 @@ class StudentAI():
         self.board.make_move(move,self.color)
         return move
 
-    def leaf_heuristic(self,turn):
-        state = self.board.is_win(turn)
+    def leaf_heuristic(self):
+        state = self.board.is_win(self.color)
         if state:
             if state == self.color:
                 return self.col * self.row
@@ -45,9 +45,3 @@ class StudentAI():
                 else:
                     score -= 1
         return score
-
-    def simulate_move(self,move,turn):
-        self.board.make_move(move,turn)
-
-    def dfs(self,turn,depth_limit):
-        #TODO
