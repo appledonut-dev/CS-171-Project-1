@@ -50,7 +50,7 @@ class StudentAI():
         score = 0
         for i in range(self.row):
             for j in range(self.col):
-                checker = self.board.board[i][j]:
+                checker = self.board.board[i][j]
                     if checker.get_color() == self.color:
                         if checker.is_king:
                             score += 2
