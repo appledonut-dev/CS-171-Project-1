@@ -51,16 +51,16 @@ class StudentAI():
         for i in range(self.row):
             for j in range(self.col):
                 checker = self.board.board[i][j]
-                    if checker.get_color() == self.color:
-                        if checker.is_king:
-                            score += 2
-                        else:
-                            score += 1
-                    elif checker.get_color() == self.opponent[self.color]:
-                        if checker.is_king:
-                            score -= 2
-                        else:
-                            score -= 1
+                if checker.get_color() == self.color:
+                    if checker.is_king:
+                        score += 2
+                    else:
+                        score += 1
+                elif checker.get_color() == self.opponent[self.color]:
+                    if checker.is_king:
+                        score -= 2
+                    else:
+                        score -= 1
         return score
     
     def dfs(self, turn, depth_limit):
