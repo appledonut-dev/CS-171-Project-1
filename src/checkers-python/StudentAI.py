@@ -26,13 +26,14 @@ class StudentAI():
         self.board.make_move(move,self.color)
         return move
 
-    def leaf_heuristic(self,board):
-        if board.is_win:
-            if board.is_win == self.color:
+    def leaf_heuristic(self,turn):
+        state = self.board.is_win(turn)
+        if state:
+            if state == self.color:
                 return self.col * self.row
             return -1 * self.col * self.row
         score = 0
-        for checker in board.board:
+        for checker in self.board.board:
             if checker.get_color == self.color:
                 if checker.is_king:
                     score += 2
@@ -44,3 +45,9 @@ class StudentAI():
                 else:
                     score -= 1
         return score
+
+    def simulate_move(self,move,turn):
+        self.board.make_move(move,turn)
+
+    def dfs(self,turn,depth_limit):
+        #TODO
