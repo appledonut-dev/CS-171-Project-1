@@ -25,3 +25,18 @@ class StudentAI():
         move = moves[index][inner_index]
         self.board.make_move(move,self.color)
         return move
+
+    def leaf_heuristic(self,board):
+        score = 0
+        for checker in board.board:
+            if checker.get_color == self.color:
+                if checker.is_king:
+                    score += 2
+                else:
+                    score += 1
+            elif checker.get_color == self.opponent[self.color]:
+                if checker.is_king:
+                    score -= 2
+                else:
+                    score -= 1
+        return score
