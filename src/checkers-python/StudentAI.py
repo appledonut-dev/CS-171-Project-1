@@ -41,8 +41,8 @@ class StudentAI():
 
         
 
-    def leaf_heuristic(self):
-        state = self.board.is_win(self.color)
+    def leaf_heuristic(self, turn):
+        state = self.board.is_win(turn)
         if state:
             if state == self.color:
                 return self.col * self.row
@@ -62,31 +62,39 @@ class StudentAI():
         return score
     
     def dfs(self, turn, depth_limit):
-        #Base Case
-        if depth_limit == 0 or self.board.is_win(turn) != 0:
-            return self.leaf_heuristic()
-            
         moves = self.board.get_all_possible_moves(turn)
-        if len(moves) == 0:
-            if turn == self.color:
-                return -1 * self.col * self.row # return loss
-            else:
-                return self.col * self.row # return win
         
         if turn == self.color: # my turn (MAX)
             score = float(-1 * self.col * self.row) # lowest possible score
             for checker_moves in moves:
                 for move in checker_moves:
                     self.board.make_move(move, turn)
-                    score = max(score, self.dfs(self.opponent[turn], depth_limit -1))
+                    
+                    # depth limit reached or terminal state (leaf states)
+                    if depth_limit == 0 or self.board.is_win(turn) != 0:
+                        score = max(score, self.leaf_heuristic(turn))
+                        
+                    # not leaf states
+                    else:
+                        score = max(score, self.dfs(self.opponent[turn], depth_limit -1))
+                        
                     self.board.undo()
                     # pass max value
+                    
         else: # opponent's turn (MIN)
             score = float(self.col * self.row) # largest possible score
             for checker_moves in moves:
                 for move in checker_moves:
                     self.board.make_move(move, turn)
-                    score = min(score, self.dfs(self.opponent[turn], depth_limit - 1))
+                    
+                    # depth limit reached or terminal state (leaf states)
+                    if depth_limit == 0 or self.board.is_win(turn) != 0:
+                        score = min(score, self.leaf_heuristic(turn))
+                        
+                    # not leaf states
+                    else:
+                        score = min(score, self.dfs(self.opponent[turn], depth_limit -1))
+                        
                     self.board.undo()
                     # pass min value
         return score
