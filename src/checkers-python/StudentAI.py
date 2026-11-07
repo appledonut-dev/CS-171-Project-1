@@ -98,33 +98,3 @@ class StudentAI():
                     self.board.undo()
                     # pass min value
         return score
-
-    def leaf_heuristic(self):
-            state = self.board.is_win(self.color)
-            if state:
-                if state == self.color:
-                    return self.col * self.row
-                return -1 * self.col * self.row
-                
-            score = 0
-            
-            color_map = {1: "B", 2: "W"}
-            my_color = color_map[self.color]
-            opp_color = color_map[self.opponent[self.color]]
-            
-            for row in range(self.row):
-                for col in range(self.col):
-                    checker = self.board.board[row][col]
-                    
-                    if checker.color == my_color:
-                        if checker.is_king:
-                            score += 2
-                        else:
-                            score += 1
-                    elif checker.color == opp_color:
-                        if checker.is_king:
-                            score -= 2
-                        else:
-                            score -= 1
-                            
-            return score
