@@ -49,12 +49,12 @@ class StudentAI():
             return -1 * self.col * self.row
         score = 0
         for checker in self.board.board:
-            if checker.get_color == self.color:
+            if checker.get_color() == self.color:
                 if checker.is_king:
                     score += 2
                 else:
                     score += 1
-            elif checker.get_color == self.opponent[self.color]:
+            elif checker.get_color() == self.opponent[self.color]:
                 if checker.is_king:
                     score -= 2
                 else:
