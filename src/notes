@@ -1,0 +1,31 @@
+Functions:
+return uct done
+create node
+recursive delete node (not needed in python)
+
+When opponent chooses move,
+1. locate child node for resulting state
+2. separate it from original tree
+3. delete original tree
+4. set child node as root
+5. build rest of tree
+
+Current state (root)
+Possible moves this turn.... (rollouts (1st iter/skipped potentially), UCT (2nd iter), return best UCT (4th iter)) b
+Possible opponent moves.... (new root) (rollouts (2nd iter), UCT (3rd iter)) ab
+Possible moves for us to choose from next turn.... (rollouts (3rd iter), UCT(4th iter/final)) a^2b
+if a = 1, total work is O(b); set exploration parameter(c) to sqrt(2)?
+
+MCTS Tree building:
+
+Selection:
+you are on this current node
+to check if you've run rollouts on children, check if child list is empty
+if child list is not empty, then run UCT because you have wins and traversal counts already
+
+Expansion and Simulation:
+if child list is empty, you add all children to frontier (queue) and simulate rollouts (multithreading???)
+
+Backpropagation:
+update wins and traversal for children (could be done inside simulation portion)
+we update wins and traversal for current node.  now you can do UCT
