@@ -1,11 +1,4 @@
-MonteCarloTree
-
-MonteCarloNode:
-player color
-pointer to parent
-list of pointers to children
-traversal counter
-win counter
+from time import time
 
 class StudentAI():
 
@@ -19,27 +12,38 @@ class StudentAI():
         self.opponent = {1:2,2:1}
         self.color = 2
         
-        self.root = MCTSNode(self.board, None, None, None)
-        #TODO self.time_limit
+        self.root = MCTSNode(self.board, None, 2, None)
         
     def get_move(self, move):
-        if len(move) != 0:
-            self.board.make_move(move, self.opponent[self.color])
-            #TODO set root node color
-        else:
+        if len(move) == 0:
             self.color = 1  # if no enemy move, that means we're first (color = 1)
-        #TODO build tree, choose move
+            self.root.color = 1
+        else:
+            self.board.make_move(move, self.opponent[self.color])
+            match = None
+            for child in self.root.children:
+                if child.move == move:
+                    match = child
+                    break
+            if match is not None:
+                match.parent = None
+                self.root = match
+            else:
+                self.root = MCTSNode(self.board, None, self.color, None)
+        self.build_tree(sqrt(2), 2)
+        
+        #TODO choose move
+        best_move = max_child.move
             
-            
-    def build_tree(self, c, depth):
-        start_time = time.time()
-        finished = False
-        while not finished and (time.time() - start_time < self.time_limit):
-            finished = self.root.select(c, depth)
+    def build_tree(self, c, time_limit):
+        start_time = time()
+        while time() - start_time < time_limit:
+            self.root.select(c)
+            self.root.reset() # undo moves
 
 
 class MCTSNode():
-    def __init__(self, board, move = None, color, parent = None):
+    def __init__(self, board, move = None, color = None, parent = None):
         self.board = board
         self.move = move
         self.counter = len(self.board.saved_move)
@@ -50,7 +54,7 @@ class MCTSNode():
         self.unexplored = []
         self.wins = 0
         self.visits = 0
-        self.is_terminal = False
+        self.winner = 0
 
     def uct_value(self, c):
         return self.wins/self.visits + c*math.sqrt(math.log(self.parent.visits)/self.visits)
@@ -60,24 +64,21 @@ class MCTSNode():
         for i in range(offset):
             self.board.undo()
         
-    def select(self, c, depth):
+    def select(self, c):
+        if self.winner != 0: # reached terminal state
+            self.backpropogate(self.winner)
+    
         if self.children.empty() and self.unexplored.empty():
             # fill movelist
-            self.unexplored = self.board.get_all_possible_moves(self.color)
+            moves_2d = self.board.get_all_possible_moves(self.color)
+            self.unexplored = [m for checker_moves in moves_2d for m in checker_moves]
             
         if self.unexplored:
-            # choose child from unexplored to expand and simulate
-            # backpropagate
-            # TODO
             self.expand()
-            return False
         else:
-            if depth > 0: # max depth hasn't been reached: traverse recursively
-                max_child = max(self.children, key=lambda child: child.uct_value(c)) # chooses the first max
-                # TODO change board state to match max_child
-                self.board.make_move(max_child.move, self.color)
-                return max_child.select(c, depth - 1)
-            return True # max depth traversed without missing children = finished
+            max_child = max(self.children, key=lambda child: child.uct_value(c)) # chooses the first max
+            self.board.make_move(max_child.move, self.color)
+            max_child.select(c, depth - 1)
     
     def expand(self):
         move = self.unexplored.pop()
@@ -85,13 +86,12 @@ class MCTSNode():
         # we make move before initializing child node to give child node correct turn
         child = MCTSNode(self.board, move, self.opponent[self.color], self)
         self.children.append(child)
-        # set is_terminal flag for child\
-        winner = child.board.is_win(self.color)
-        if winner != 0:
-            child.is_terminal = True
+        # set winner flag for child
+        child.winner = child.board.is_win(self.color)
+        if child.winner == 0:
+            child.backpropagate(child.simulate())
         else:
-            child.simulate()
-        child.backpropagate(winner)
+            child.backpropagate(child.winner)
 
     def simulate(self, turn_limit = 100):
         turn_counter = 0
@@ -120,42 +120,7 @@ class MCTSNode():
                     node.wins += 0.5
             node = node.parent
         
-    
-        
     def return_best_move(self):
         for child in self.children:
-            return max(self.children.move, key=lambda child: child.uct_value(c))
-
-
-Functions:
-return uct done
-create node
-recursive delete node (not needed in python)
-
-When opponent chooses move,
-1. locate child node for resulting state
-2. separate it from original tree
-3. delete original tree
-4. set child node as root
-5. build rest of tree
-
-Current state (root)
-Possible moves this turn.... (rollouts (1st iter/skipped potentially), UCT (2nd iter), return best UCT (4th iter)) b
-Possible opponent moves.... (new root) (rollouts (2nd iter), UCT (3rd iter)) ab
-Possible moves for us to choose from next turn.... (rollouts (3rd iter), UCT(4th iter/final)) a^2b
-if a = 1, total work is O(b); set exploration parameter(c) to sqrt(2)?
-
-MCTS Tree building:
-
-Selection:
-you are on this current node
-to check if you've run rollouts on children, check if child list is empty
-if child list is not empty, then run UCT because you have wins and traversal counts already
-
-Expansion and Simulation:
-if child list is empty, you add all children to frontier (queue) and simulate rollouts (multithreading???)
-
-Backpropagation:
-update wins and traversal for children (could be done inside simulation portion)
-we update wins and traversal for current node.  now you can do UCT
-
+            max_child = max(self.children.move, key=lambda child: (child.visits, child.wins / child.visit))
+        return max_child.move
