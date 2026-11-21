@@ -1,7 +1,8 @@
-from random import randint
+from random import randint, choice
 from BoardClasses import Move
 from BoardClasses import Board
 from math import sqrt, log
+from time import time
 #The following part should be completed by students.
 #Students can modify anything except the class name and exisiting functions and varibles.
 
@@ -20,7 +21,7 @@ class MCTSNode():
         self.winner = 0
 
     def uct_value(self, c):
-        return self.wins/self.visits + c*math.sqrt(math.log(self.parent.visits)/self.visits)
+        return self.wins/self.visits + c*sqrt(log(self.parent.visits)/self.visits)
 
     def reset(self):
         offset = len(self.board.saved_moves) - self.counter
@@ -41,7 +42,7 @@ class MCTSNode():
         else:
             max_child = max(self.children, key=lambda child: child.uct_value(c)) # chooses the first max
             self.board.make_move(max_child.move, self.color)
-            max_child.select(c, depth - 1)
+            max_child.select(c)
     
     def expand(self):
         move = self.unexplored.pop()
@@ -63,7 +64,7 @@ class MCTSNode():
         while turn_counter < turn_limit and not winner:
             moves_2d = self.board.get_all_possible_moves(turn)
             moves = [m for checker_moves in moves_2d for m in checker_moves]
-            rand_move = random.choice(moves)
+            rand_move = choice(moves)
             self.board.make_move(rand_move, turn)
             winner = self.board.is_win(turn)
             turn = self.opponent(turn)
