@@ -92,6 +92,21 @@ class MCTSNode():
         else:
             child.simulate()
         child.backpropagate(winner)
+
+    def simulate(self, turn_limit = 100):
+        turn_counter = 0
+        winner = 0
+        turn = self.color
+        while turn_counter < turn_limit and not winner:
+            moves_2d = self.board.get_all_possible_moves(turn)
+            moves = [m for checker_moves in moves_2d for m in checker_moves]
+            rand_move = random.choice(moves)
+            self.board.make_move(rand_move, turn)
+            winner = self.board.is_win(turn)
+            turn = self.opponent(turn)
+            turn_counter += 1
+        if winner == 0: winner = -1 # default to tie
+        return winner
     
     def backpropagate(self, winner):
         node = self
