@@ -42,8 +42,9 @@ class MCTSNode():
     def __init__(self, board, move = None, color, parent = None):
         self.board = board
         self.move = move
-        self.turn = len(self.board.saved_move)
+        self.counter = len(self.board.saved_move)
         self.color = color
+        self.opponent = {1:2,2:1}
         self.parent = parent
         self.children = []
         self.unexplored = []
@@ -55,61 +56,54 @@ class MCTSNode():
         return self.wins/self.visits + c*math.sqrt(math.log(self.parent.visits)/self.visits)
 
     def reset(self):
-        counter = len(self.board.saved_moves) - self.turn
-        for i in range(counter):
+        offset = len(self.board.saved_moves) - self.counter
+        for i in range(offset):
             self.board.undo()
         
-    def select(self, c, depth)
-        # TODO: UPDATE BOARD PER MOVE
-        # STOP IF WIN STATE SELECTED
-        '''
-        select recursively till max depth or no children found
-        if max depth, finished = True
-        if no children, call exp_and_sim and restart from root
-        case where no children: expansion and simulation
-        '''
-        if self.children.empty():
-            # add children to queue and simulate
-            # get all possible moves, make new child nodes
-            # backpropagate and update all node counters
+    def select(self, c, depth):
+        if self.children.empty() and self.unexplored.empty():
+            # fill movelist
+            self.unexplored = self.board.get_all_possible_moves(self.color)
+            
+        if self.unexplored:
+            # choose child from unexplored to expand and simulate
+            # backpropagate
             # TODO
-            self.exp_and_sim()
+            self.expand()
             return False
         else:
             if depth > 0: # max depth hasn't been reached: traverse recursively
                 max_child = max(self.children, key=lambda child: child.uct_value(c)) # chooses the first max
+                # TODO change board state to match max_child
+                self.board.make_move(max_child.move, self.color)
                 return max_child.select(c, depth - 1)
             return True # max depth traversed without missing children = finished
     
-    def expand(self)
-        win_status = self.board.is_win(self.color)
-        if win_status != 0:
-            self.is_terminal = True
-            self.backpropagate(win_status)
-            return
-        
-        moves = self.board.get_all_possible_moves(self.color)
-        legal_moves = [m for checker_moves in moves for m in checker_moves]
-        
-        if not legal_moves:
-            
-        self.simulate()
-        self.backpropagate()
-            
-        
-        self.backpropagate()
+    def expand(self):
+        move = self.unexplored.pop()
+        self.board.make_move(move, self.color)
+        # we make move before initializing child node to give child node correct turn
+        child = MCTSNode(self.board, move, self.opponent[self.color], self)
+        self.children.append(child)
+        # set is_terminal flag for child\
+        winner = child.board.is_win(self.color)
+        if winner != 0:
+            child.is_terminal = True
+        else:
+            child.simulate()
+        child.backpropagate(winner)
     
     def backpropagate(self, winner):
-    	node = self
-      while node is not None:
-          node.visits += 1
-          if node.parent is not None:
-              mover = node.parent.color
-              if winner == mover:
-                  node.wins += 1
-              elif winner == -1:
-                  node.wins += 0.5
-          node = node.parent
+        node = self
+        while node is not None:
+            node.visits += 1
+            if node.parent is not None:
+                turn = node.parent.color
+                if winner == turn:
+                    node.wins += 1
+                elif winner == -1:
+                    node.wins += 0.5
+            node = node.parent
         
     
         
