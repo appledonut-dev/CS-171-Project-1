@@ -24,7 +24,7 @@ class MCTSNode():
         return self.wins/self.visits + c*sqrt(log(self.parent.visits)/self.visits)
 
     def reset(self):
-        offset = len(self.board.saved_moves) - self.counter
+        offset = len(self.board.saved_move) - self.counter
         for i in range(offset):
             self.board.undo()
         
@@ -67,7 +67,7 @@ class MCTSNode():
             rand_move = choice(moves)
             self.board.make_move(rand_move, turn)
             winner = self.board.is_win(turn)
-            turn = self.opponent(turn)
+            turn = self.opponent[turn]
             turn_counter += 1
         if winner == 0: winner = -1 # default to tie
         return winner
@@ -86,7 +86,7 @@ class MCTSNode():
         
     def return_best_child(self):
         for child in self.children:
-            return max(self.children.move, key=lambda child: (child.visits, child.wins / child.visit))
+            return max(self.children, key=lambda child: (child.visits, child.wins / child.visits))
 
 class StudentAI():
 
