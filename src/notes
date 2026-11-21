@@ -19,17 +19,22 @@ class StudentAI():
         self.opponent = {1:2,2:1}
         self.color = 2
         
-        self.root = MCTSNode(self.board, None, self.color, None)
+        self.root = MCTSNode(self.board, None, None, None)
+        #TODO self.time_limit
+        
     def get_move(self, move):
         if len(move) != 0:
             self.board.make_move(move, self.opponent[self.color])
+            #TODO set root node color
         else:
             self.color = 1  # if no enemy move, that means we're first (color = 1)
+        #TODO build tree, choose move
             
             
     def build_tree(self, c, depth):
+        start_time = time.time()
         finished = False
-        while not finished:
+        while not finished and (time.time() - start_time < self.time_limit):
             finished = self.root.select(c, depth)
 
 
@@ -37,15 +42,22 @@ class MCTSNode():
     def __init__(self, board, move = None, color, parent = None):
         self.board = board
         self.move = move
+        self.turn = len(self.board.saved_move)
         self.color = color
         self.parent = parent
         self.children = []
+        self.unexplored = []
         self.wins = 0
         self.visits = 0
-        self.is_end
+        self.is_terminal = False
 
     def uct_value(self, c):
         return self.wins/self.visits + c*math.sqrt(math.log(self.parent.visits)/self.visits)
+
+    def reset(self):
+        counter = len(self.board.saved_moves) - self.turn
+        for i in range(counter):
+            self.board.undo()
         
     def select(self, c, depth)
         # TODO: UPDATE BOARD PER MOVE
@@ -69,7 +81,7 @@ class MCTSNode():
                 return max_child.select(c, depth - 1)
             return True # max depth traversed without missing children = finished
     
-    def exp_and_sim(self)
+    def expand(self)
         win_status = self.board.is_win(self.color)
         if win_status != 0:
             self.is_terminal = True
@@ -81,10 +93,23 @@ class MCTSNode():
         
         if not legal_moves:
             
+        self.simulate()
+        self.backpropagate()
+            
         
         self.backpropagate()
     
-    def backpropagate(self)
+    def backpropagate(self, winner):
+    	node = self
+      while node is not None:
+          node.visits += 1
+          if node.parent is not None:
+              mover = node.parent.color
+              if winner == mover:
+                  node.wins += 1
+              elif winner == -1:
+                  node.wins += 0.5
+          node = node.parent
         
     
         
