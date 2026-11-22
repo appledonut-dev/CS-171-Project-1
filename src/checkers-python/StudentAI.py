@@ -30,7 +30,7 @@ class MCTSNode():
         
     def select(self, c):
         if self.winner != 0: # reached terminal state
-            self.backpropogate(self.winner)
+            self.backpropagate(self.winner)
     
         if not self.children and not self.unexplored:
             # fill movelist
