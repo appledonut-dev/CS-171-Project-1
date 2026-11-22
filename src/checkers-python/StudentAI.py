@@ -36,9 +36,15 @@ class MCTSNode():
             # fill movelist
             moves_2d = self.board.get_all_possible_moves(self.color)
             self.unexplored = [m for checker_moves in moves_2d for m in checker_moves]
+
+            if not self.unexplored:
+                self.winner = self.opponent[self.color]
+                self.backpropagate(self.winner)
+                return
             
         if self.unexplored:
             self.expand()
+            return
         else:
             max_child = max(self.children, key=lambda child: child.uct_value(c)) # chooses the first max
             self.board.make_move(max_child.move, self.color)
